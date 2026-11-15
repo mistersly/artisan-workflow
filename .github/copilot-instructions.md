@@ -516,7 +516,7 @@ After adding/modifying endpoints:
 make swag
 
 # View docs
-open http://localhost:8080/swagger/index.html
+open http://localhost:8180/swagger/index.html
 ```
 
 **Swagger Annotations**:
@@ -629,7 +629,7 @@ make swag
 
 # 5. Verify everything works
 make up
-curl http://localhost:8080/health
+curl http://localhost:8180/health
 ```
 
 ---

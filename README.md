@@ -119,11 +119,12 @@ make quick-start
   <img src="https://grabapi.dev/docs/images/quick-start-light.gif" alt="Quick Start Demo" width="800">
 </div>
 
-**🎉 Done!** Your API is now running at:
+**🎉 Done!** Your stack is now running at:
 
-- **API Base URL:** <http://localhost:8080/api/v1>
-- **Swagger UI:** <http://localhost:8080/swagger/index.html>
-- **Health Checks:** <http://localhost:8080/health> • [/health/live](http://localhost:8080/health/live) • [/health/ready](http://localhost:8080/health/ready)
+- **API Base URL:** <http://localhost:8180/api/v1>
+- **Swagger UI:** <http://localhost:8180/swagger/index.html>
+- **Health Checks:** <http://localhost:8180/health> • [/health/live](http://localhost:8180/health/live) • [/health/ready](http://localhost:8180/health/ready)
+- **Frontend (web/):** <http://localhost:5173>
 
 **Create Admin User:**
 
@@ -142,7 +143,7 @@ make promote-admin ID=1        # Promote existing user to admin by ID
   <img src="https://grabapi.dev/docs/images/swagger-ui.png" alt="Swagger UI" width="700">
 </div>
 
-Open [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html) to explore and test all endpoints interactively.
+Open [http://localhost:8180/swagger/index.html](http://localhost:8180/swagger/index.html) to explore and test all endpoints interactively.
 
 ### Or Use Postman
 
@@ -295,6 +296,19 @@ make down      # Stop containers
 - 📦 **Volume mounts** — Edit code in your IDE, runs in container
 - 🗄️ **PostgreSQL** — Database on internal Docker network
 - 📚 **All tools pre-installed** — No Go installation needed on host
+
+### Frontend (`web/`)
+
+The `web/` directory holds the React 19 + Vite frontend. It is part of `make up`:
+
+```bash
+make web-install   # Install frontend dependencies
+make web-dev       # Run frontend dev server (Vite on :5173)
+make web-build     # Production build (tsc -b && vite build → web/dist/)
+make web-lint      # Lint frontend (oxlint)
+```
+
+The Vite dev server proxies `/api` and `/health` to the Go API — see `web/README.md`.
 
 ### Database Migrations
 

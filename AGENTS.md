@@ -514,7 +514,7 @@ func (h *Handler) CreateUser(c *gin.Context) {
 ```bash
 make swag    # Regenerate Swagger docs
 
-# View at: http://localhost:8080/swagger/index.html
+# View at: http://localhost:8180/swagger/index.html
 ```
 
 ---
@@ -580,8 +580,12 @@ GRAB includes these production-ready features:
 | View logs | `make logs` |
 | Enter app container | `make exec` |
 | Enter DB container | `make exec-db` |
+| Install frontend deps | `make web-install` |
+| Run frontend dev server | `make web-dev` |
+| Build frontend | `make web-build` |
+| Lint frontend | `make web-lint` |
 | Clean restart | `make down && make up` |
-| Health check | `curl localhost:8080/health` |
+| Health check | `curl localhost:8180/health` |
 | View all commands | `make help` |
 
 ### Project Structure
@@ -608,6 +612,7 @@ go-rest-api-boilerplate/
 ├── migrations/           # SQL migration files
 ├── scripts/              # Helper scripts
 ├── tests/                # Integration tests
+├── web/                  # Frontend (React 19 + Vite + Tailwind 4)
 ├── Dockerfile            # Docker image
 ├── docker-compose.yml    # Development compose
 ├── Makefile              # Development commands

@@ -33,7 +33,7 @@ jwt:
   ttlhours: 24                      # Deprecated: use access_token_ttl instead
 
 server:
-  port: "8080"                      # Override with SERVER_PORT
+  port: "8180"                      # Override with SERVER_PORT
   readtimeout: 10                   # Override with SERVER_READTIMEOUT (seconds)
   writetimeout: 10                  # Override with SERVER_WRITETIMEOUT (seconds)
   idletimeout: 120                  # Override with SERVER_IDLETIMEOUT (seconds)

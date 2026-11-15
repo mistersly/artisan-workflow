@@ -33,7 +33,7 @@ import (
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 
-// @host localhost:8080
+// @host localhost:8180
 // @BasePath /
 
 // @securityDefinitions.apikey BearerAuth
@@ -87,7 +87,7 @@ func run() error {
 
 	port := cfg.Server.Port
 	if port == "" {
-		port = "8080"
+		port = "8180"
 	}
 
 	maxHeaderBytes := cfg.Server.MaxHeaderBytes

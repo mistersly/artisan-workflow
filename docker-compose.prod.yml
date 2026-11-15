@@ -31,7 +31,7 @@ services:
     env_file:
       - .env
     ports:
-      - "${SERVER_PORT:-8080}:${SERVER_PORT:-8080}"
+      - "${SERVER_PORT:-8180}:${SERVER_PORT:-8180}"
     # No volumes in production - code is baked into the image
     depends_on:
       db:
@@ -39,7 +39,30 @@ services:
     networks:
       - go_api_network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:${SERVER_PORT:-8080}/health/live || exit 1"]
+      # wget (busybox) instead of curl: not installed in the alpine production image
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:${SERVER_PORT:-8180}/health/live || exit 1"]
+      interval: ${HEALTH_CHECK_INTERVAL:-10s}
+      timeout: ${HEALTH_CHECK_TIMEOUT:-5s}
+      retries: ${HEALTH_CHECK_RETRIES:-5}
+    restart: always
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: ${WEB_CONTAINER_NAME_PROD:-go_api_web_prod}
+    environment:
+      - API_UPSTREAM=http://app:${SERVER_PORT:-8180}
+    ports:
+      - "${WEB_PORT:-3000}:80"
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - go_api_network
+    healthcheck:
+      # 127.0.0.1 instead of localhost: busybox wget has no IPv4 fallback after ::1
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
       interval: ${HEALTH_CHECK_INTERVAL:-10s}
       timeout: ${HEALTH_CHECK_TIMEOUT:-5s}
       retries: ${HEALTH_CHECK_RETRIES:-5}

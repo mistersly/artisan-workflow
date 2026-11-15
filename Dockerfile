@@ -1,6 +1,6 @@
 # Development stage with hot-reload
 # Using Debian-based image for better CGO/SQLite compatibility
-FROM golang:1.24-bookworm AS development
+FROM golang:1.25-bookworm AS development
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -29,7 +29,7 @@ RUN go install github.com/air-verse/air@v1.52.3 && \
 COPY . .
 
 # Expose port
-EXPOSE 8080
+EXPOSE 8180
 
 # Set executable permission for app_entrypoint.sh
 RUN chmod +x scripts/app_entrypoint.sh
@@ -38,7 +38,7 @@ RUN chmod +x scripts/app_entrypoint.sh
 ENTRYPOINT ["./scripts/app_entrypoint.sh"]
 
 # Production build stage
-FROM golang:1.24-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache git
@@ -69,8 +69,14 @@ WORKDIR /root/
 # Copy the binary from builder
 COPY --from=builder /app/main .
 
+# Copy configuration files
+COPY configs ./configs
+
+# Copy SQL migrations
+COPY migrations ./migrations
+
 # Expose port
-EXPOSE 8080
+EXPOSE 8180
 
 # Run the application
 CMD ["./main"]

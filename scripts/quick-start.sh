@@ -76,7 +76,7 @@ fi
 echo -e "${GREEN}✅ .env file read${NC}"
 
 # Fallback for env variable(s)
-SERVER_PORT=${SERVER_PORT:-8080}
+SERVER_PORT=${SERVER_PORT:-8180}
 
 echo ""
 echo "🐳 Starting Docker containers..."

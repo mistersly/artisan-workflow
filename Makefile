@@ -1,10 +1,16 @@
-.PHONY: help quick-start up down restart logs build test test-coverage lint lint-fix swag migrate-create migrate-up migrate-down migrate-status migrate-goto migrate-force migrate-drop build-binary run-binary clean generate-jwt-secret check-env
+.PHONY: help quick-start up down restart logs build test test-coverage lint lint-fix swag web-install web-dev web-build web-lint migrate-create migrate-up migrate-down migrate-status migrate-goto migrate-force migrate-drop build-binary run-binary clean generate-jwt-secret check-env
 
 # Container name (from docker-compose.yml)
 CONTAINER_NAME := go_api_app
 
 # Check if container is running
 CONTAINER_RUNNING := $(shell docker ps --format '{{.Names}}' 2>/dev/null | grep -E '^$(CONTAINER_NAME)$$')
+
+# Web container name (from docker-compose.yml)
+WEB_CONTAINER_NAME := go_api_web
+
+# Check if web container is running
+WEB_CONTAINER_RUNNING := $(shell docker ps --format '{{.Names}}' 2>/dev/null | grep -E '^$(WEB_CONTAINER_NAME)$$')
 
 # Determine execution command
 ifdef CONTAINER_RUNNING
@@ -38,6 +44,12 @@ help:
 	@echo "  make lint           - Run linter"
 	@echo "  make lint-fix       - Run linter and fix issues"
 	@echo "  make swag           - Generate Swagger docs"
+	@echo ""
+	@echo "🌐 Frontend Commands:"
+	@echo "  make web-install    - Install frontend dependencies"
+	@echo "  make web-dev        - Run frontend dev server (Vite)"
+	@echo "  make web-build      - Build frontend for production"
+	@echo "  make web-lint       - Lint frontend (oxlint)"
 	@echo ""
 	@echo "🔒 Security Commands:"
 	@echo "  make generate-jwt-secret  - Generate and set JWT secret in .env"
@@ -76,7 +88,8 @@ up:
 	@echo "🐳 Starting Docker containers..."
 	@docker compose up -d --build --wait
 	@echo "✅ Containers started and healthy"
-	@echo "📍 API: http://localhost:8080"
+	@echo "📍 API: http://localhost:8180"
+	@echo "📍 Web: http://localhost:5173"
 
 ## down: Stop Docker containers
 down:
@@ -188,6 +201,71 @@ else
 		echo "❌ Error: Docker container not running and swag not installed"; \
 		echo "Please run: make up"; \
 		echo "Or install: go install github.com/swaggo/swag/cmd/swag@latest"; \
+		exit 1; \
+	fi
+endif
+
+## web-install: Install frontend dependencies (npm install)
+web-install:
+ifdef WEB_CONTAINER_RUNNING
+	@echo "$(ENV_MSG)"
+	@docker exec $(WEB_CONTAINER_NAME) npm install && echo "✅ Frontend dependencies installed" || exit 1
+else
+	@if command -v npm >/dev/null 2>&1; then \
+		echo "$(ENV_MSG)"; \
+		cd web && npm install; \
+	else \
+		echo "❌ Error: web container not running and npm not installed"; \
+		echo "Please run: make up"; \
+		exit 1; \
+	fi
+endif
+
+## web-dev: Run frontend dev server (Vite)
+web-dev:
+ifdef WEB_CONTAINER_RUNNING
+	@echo "$(ENV_MSG)"
+	@echo "🔁 Dev server already runs in the web container (started by make up)"
+	@docker compose logs -f web
+else
+	@if command -v npm >/dev/null 2>&1; then \
+		echo "$(ENV_MSG)"; \
+		cd web && npm run dev; \
+	else \
+		echo "❌ Error: web container not running and npm not installed"; \
+		echo "Please run: make up"; \
+		exit 1; \
+	fi
+endif
+
+## web-build: Build frontend for production (tsc -b && vite build)
+web-build:
+ifdef WEB_CONTAINER_RUNNING
+	@echo "$(ENV_MSG)"
+	@docker exec $(WEB_CONTAINER_NAME) npm run build && echo "✅ Frontend built: web/dist/" || exit 1
+else
+	@if command -v npm >/dev/null 2>&1; then \
+		echo "$(ENV_MSG)"; \
+		cd web && npm run build; \
+	else \
+		echo "❌ Error: web container not running and npm not installed"; \
+		echo "Please run: make up"; \
+		exit 1; \
+	fi
+endif
+
+## web-lint: Lint frontend (oxlint)
+web-lint:
+ifdef WEB_CONTAINER_RUNNING
+	@echo "$(ENV_MSG)"
+	@docker exec $(WEB_CONTAINER_NAME) npm run lint && echo "✅ No frontend linting issues found!" || exit 1
+else
+	@if command -v npm >/dev/null 2>&1; then \
+		echo "$(ENV_MSG)"; \
+		cd web && npm run lint; \
+	else \
+		echo "❌ Error: web container not running and npm not installed"; \
+		echo "Please run: make up"; \
 		exit 1; \
 	fi
 endif

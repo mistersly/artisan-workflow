@@ -25,7 +25,7 @@ jwt:
   ttlhours: 24
 
 server:
-  port: "8080"
+  port: "8180"
   readtimeout: 10
   writetimeout: 10
   idletimeout: 120

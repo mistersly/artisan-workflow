@@ -255,7 +255,7 @@ Full guide: https://vahiiiid.github.io/go-rest-api-docs/CONFIGURATION/
 | Enter app container | `make exec` |
 | Enter DB container | `make exec-db` |
 | Clean restart | `make down && make up` |
-| Health check | `curl localhost:8080/health` |
+| Health check | `curl localhost:8180/health` |
 
 ---
 
