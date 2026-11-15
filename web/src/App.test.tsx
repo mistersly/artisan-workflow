@@ -1,15 +1,15 @@
 import { render, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
 import App from "./App"
 
 describe("App", () => {
-  it("renders and increments the counter button", async () => {
+  it("renders the login screen", () => {
     render(<App />)
 
-    const button = screen.getByRole("button", { name: /count is/i })
-    expect(button).toHaveTextContent("Count is 0")
-
-    await userEvent.click(button)
-    expect(button).toHaveTextContent("Count is 1")
+    expect(
+      screen.getByRole("heading", { name: "Connexion" }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: /se connecter/i }),
+    ).toBeInTheDocument()
   })
 })
