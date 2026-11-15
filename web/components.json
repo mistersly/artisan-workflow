@@ -23,6 +23,7 @@
   "menuAccent": "subtle",
   "registries": {
     "@shadcn-io": "https://www.shadcn.io/r/{name}.json",
-    "@reui": "https://reui.io/r/{style}/{name}.json"
+    "@reui": "https://reui.io/r/{style}/{name}.json",
+    "@acme": "https://acme.com/r/{name}.json"
   }
 }
