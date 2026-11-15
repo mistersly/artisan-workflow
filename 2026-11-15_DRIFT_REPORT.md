@@ -1,0 +1,14 @@
+## 1794741804673-vitest-playwright-frontend-testing-plan.md
+
+- **`Makefile:93` — `make up` utilise `--wait`** : le plan affirme « Impact : nul pour `make up` (pas de `--wait`) » à propos du healthcheck web. Faux dans ce repo : `docker compose up -d --build --wait` attend désormais aussi le healthcheck du service web (`start_period: 120s`). Un premier boot où le `npm install` du volume `web_node_modules` dépasse 120 s peut allonger ou faire échouer `make up`.
+- **`web/vitest.config.ts` diffère du snippet du plan** :
+  - import avec extension `./vite.config.ts` (plan : `./vite.config`) — l'extension est requise : le snippet du plan ne type-checke pas sous `tsc -b` (`tsconfig.node.json`, `module: "nodenext"` + `allowImportingTsExtensions`) et déclenche l'avertissement `configLoader: 'native'` de Vitest 5.
+  - ligne `exclude: [...configDefaults.exclude, "e2e/**"]` — absente du plan ; sans elle, Vitest ramasse `e2e/*.spec.ts` et la suite échoue (4 suites FAIL constatées lors de la validation).
+- **`web/vite.config.ts`: `allowedHosts: ["web"]` ajouté à `server`** — absent du plan (et non listé dans ses risques) ; sans cette clé Vite bloque les requêtes de navigateur E2E via `http://web:5173` (« Blocked request. This host ("web") is not allowed ») et le smoke échoue.
+- **`web/.oxlintrc.json`: `ignorePatterns: ["e2e/**"]`** — prévu seulement conditionnellement par le plan (validation étape 4 : « si bruit sur `e2e/` ») et réalisé : le `use()` du fixture `authApi` déclenchait `react/rules-of-hooks` (1 erreur oxlint).
+- **`web/e2e/tsconfig.json`** : sur-ensemble de la config « minimale » décrite par le plan — ajout de `target`, `strict`, `noEmit`, `skipLibCheck`, `verbatimModuleSyntax`, `moduleDetection: "force"`, `allowImportingTsExtensions`, `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`, et `include: ["**/*.ts"]`.
+- **Fixture `authApi` (`web/e2e/fixtures/auth.ts`)** :
+  - `register(name, email, password?)` et `login(email, password?)` : `password` est optionnel avec valeur par défaut `E2E_PASSWORD` (le plan décrivait le paramètre comme requis).
+  - contexte API obtenu via la fixture intégrée `({ request })` de `test.extend`, documentée comme équivalente à `playwright.request.newContext({ baseURL })` du plan — pas de création explicite manuelle du contexte.
+- **`web/e2e/auth/*.spec.ts`** : libellé de skip étendu — « Pages d'auth non implémentées (contrat data-testid : voir fixtures/auth.ts) » vs « Pages d'auth non implémentées » dans le plan ; le spec logout chiffre la route protégée placeholder `/dashboard` et le testid `logout-button`, non spécifiés par le plan.
+- **`web/README.md` au-delà du périmètre de l'étape 7** : en plus de la section « Tests », la table « Make targets » (+4 lignes) et le bloc « Scripts npm » (+3 lignes) ont été mis à jour — le plan ne prévoyait que la nouvelle section.

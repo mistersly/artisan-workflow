@@ -1,4 +1,4 @@
-.PHONY: help quick-start up down restart logs build test test-coverage lint lint-fix swag web-install web-dev web-build web-lint migrate-create migrate-up migrate-down migrate-status migrate-goto migrate-force migrate-drop build-binary run-binary clean generate-jwt-secret check-env
+.PHONY: help quick-start up down restart logs build test test-coverage lint lint-fix swag web-install web-dev web-build web-lint web-test web-test-coverage web-e2e web-e2e-report migrate-create migrate-up migrate-down migrate-status migrate-goto migrate-force migrate-drop build-binary run-binary clean generate-jwt-secret check-env
 
 # Container name (from docker-compose.yml)
 CONTAINER_NAME := go_api_app
@@ -50,6 +50,10 @@ help:
 	@echo "  make web-dev        - Run frontend dev server (Vite)"
 	@echo "  make web-build      - Build frontend for production"
 	@echo "  make web-lint       - Lint frontend (oxlint)"
+	@echo "  make web-test       - Run frontend unit tests (Vitest)"
+	@echo "  make web-test-coverage - Run unit tests with coverage"
+	@echo "  make web-e2e        - Run Playwright E2E tests (docker compose)"
+	@echo "  make web-e2e-report - Serve Playwright HTML report (localhost:9323)"
 	@echo ""
 	@echo "🔒 Security Commands:"
 	@echo "  make generate-jwt-secret  - Generate and set JWT secret in .env"
@@ -269,6 +273,50 @@ else
 		exit 1; \
 	fi
 endif
+
+## web-test: Run frontend unit tests (Vitest)
+web-test:
+ifdef WEB_CONTAINER_RUNNING
+	@echo "$(ENV_MSG)"
+	@docker exec $(WEB_CONTAINER_NAME) npm run test && echo "✅ Frontend unit tests passed" || exit 1
+else
+	@if command -v npm >/dev/null 2>&1; then \
+		echo "$(ENV_MSG)"; \
+		cd web && npm run test; \
+	else \
+		echo "❌ Error: web container not running and npm not installed"; \
+		echo "Please run: make up"; \
+		exit 1; \
+	fi
+endif
+
+## web-test-coverage: Run frontend unit tests with coverage (Vitest + v8)
+web-test-coverage:
+ifdef WEB_CONTAINER_RUNNING
+	@echo "$(ENV_MSG)"
+	@docker exec $(WEB_CONTAINER_NAME) npm run test:coverage && echo "✅ Coverage report: web/coverage/" || exit 1
+else
+	@if command -v npm >/dev/null 2>&1; then \
+		echo "$(ENV_MSG)"; \
+		cd web && npm run test:coverage; \
+	else \
+		echo "❌ Error: web container not running and npm not installed"; \
+		echo "Please run: make up"; \
+		exit 1; \
+	fi
+endif
+
+## web-e2e: Run Playwright E2E tests in the dedicated e2e container
+## (first run: pull ~2 GB Playwright image + fill e2e_node_modules, ~1-2 min)
+web-e2e:
+	@echo "🐳 Running E2E tests via docker compose (waits for web to be healthy)..."
+	@echo "ℹ️  First run: pull ~2 GB + fill e2e_node_modules volume (~1-2 min)"
+	@docker compose run --rm e2e && echo "✅ E2E tests passed" || exit 1
+
+## web-e2e-report: Serve the Playwright HTML report (http://localhost:9323)
+web-e2e-report:
+	@echo "📊 Serving Playwright HTML report on http://localhost:9323 ..."
+	@docker compose run --rm -p 9323:9323 e2e sh -c "npm install --no-audit --no-fund && npx playwright show-report --host 0.0.0.0 --port 9323"
 
 ## migrate-create: Create a new migration
 migrate-create:
